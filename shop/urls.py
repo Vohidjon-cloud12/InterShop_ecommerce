@@ -4,7 +4,7 @@ from shop.views import home, details, product_of_category, about, add_comment, a
     delete_product, login_page, logout_page, register
 
 urlpatterns = [
-    path('', home, name='home'),
+    path('home/', home, name='home'),
     path('product/<int:product_id>/', details, name='product_detail'),
     path('category/<int:category_id>/', product_of_category, name='category'),
     path('about', about, name='about'),

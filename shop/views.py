@@ -1,5 +1,6 @@
 from django.contrib.auth import logout, login, authenticate
-from django.core.paginator import Paginator
+from django.core import paginator
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Q
 from pyexpat.errors import messages
@@ -12,6 +13,8 @@ from shop.models import Product, Category, Comment, CustomUser
 def home(request):
     categories = Category.objects.all()
     products = Product.objects.all()
+    page_number = request.GET.get('page', 1)
+    paginator = Paginator(products, 2)
     search_query = request.GET.get('search')
     if search_query:
         products = products.filter(name__icontains=search_query)
@@ -21,11 +24,32 @@ def home(request):
         products = products.order_by('-price')[:2]
     elif filter_cheap:
         products = products.order_by('price')[:2]
+    try:
+        products =paginator.page(page_number)
+    except PageNotAnInteger:
+        page_number = paginator.page(1)
+    except EmptyPage:
+        page_number = paginator.page(paginator.num_pages)
+
     context = {'products': products,
                'categories': categories,
                'search_query': search_query,
                }
     return render(request, 'shop/home.html', context)
+
+
+# page = request.GET.get('page', '')
+# categories = Category.objects.all()
+# products = Product.objects.all()
+# paginator = Paginator(products, 2)
+# try:
+#     page_obj = paginator.page(page)
+# except PageNotAnInteger:
+#     page_obj = paginator.page(1)
+# except EmptyPage:
+#     page_obj = paginator.page(paginator.num_pages)
+# context = {'page_obj': page_obj}
+# return render(request, 'shop/home.html', context)
 
 
 def details(request, product_id):
